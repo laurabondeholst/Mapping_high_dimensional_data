@@ -139,6 +139,7 @@ def tsne(X=np.array([]), no_dims=2, initial_dims=50, perplexity=30.0):
     P = P * 4.									# early exaggeration
     P = np.maximum(P, 1e-12)
 
+
     # Run iterations
     for iter in range(max_iter):
 
@@ -146,6 +147,7 @@ def tsne(X=np.array([]), no_dims=2, initial_dims=50, perplexity=30.0):
         sum_Y = np.sum(np.square(Y), 1)
         num = -2. * np.dot(Y, Y.T)
         num = 1. / (1. + np.add(np.add(num, sum_Y).T, sum_Y))
+        
         num[range(n), range(n)] = 0.
         Q = num / np.sum(num)
         Q = np.maximum(Q, 1e-12)
@@ -182,12 +184,22 @@ def tsne(X=np.array([]), no_dims=2, initial_dims=50, perplexity=30.0):
 
 if __name__ == "__main__":
     print("Run Y = tsne.tsne(X, no_dims, perplexity) to perform t-SNE on your dataset.")
-    print("Running example on 2,500 MNIST digits...")
-    X = np.loadtxt("mnist2500_X_01.txt")
-    labels = np.loadtxt("mnist2500_labels_01.txt")
+    
 
-    percentile = 10
-    for percentile in range(10,110,10):
+    DATA_PATH = "data/processed/"
+    DATA_OUTPUT = DATA_PATH + "noisy_mnist/tsne_results/"
+
+    # for i in range(6,11):
+    i = 50
+    
+    print(f"Running on dataset with sigma {i/10}")
+    X = np.loadtxt(DATA_PATH + f"noisy_mnist/mnist2500_X_01_sigma{i}.txt")
+    labels = np.loadtxt(DATA_PATH + "mnist/mnist2500_labels_01.txt")
+
+# X = np.loadtxt(DATA_PATH + f"mnist/mnist2500_X_01234.txt")
+# labels = np.loadtxt(DATA_PATH + "mnist/mnist2500_labels_01234.txt")
+
+    for percentile in range(1,10,1): 
         print(f"Percentile: {percentile}")
         np.random.seed(42) # seed is reset every time so we may run a single percentile alone and still get the same results
         arr_rand = np.random.rand(X.shape[0])
@@ -198,14 +210,18 @@ if __name__ == "__main__":
 
         Y = tsne(X_split, 2, 50, 20.0)
 
-        # Y = np.array(Y)
-        # labels = np.array(labels)
-
-        # product = np.concatenate((Y,labels.T), axis = 1)
-        np.savetxt(f"TSNE_output_{percentile}.txt", Y)
-        np.savetxt(f"true_labels_{percentile}.txt", labels_split)
+        np.savetxt(DATA_OUTPUT + f"TSNE_output_{percentile}_sigma{i}.txt", Y)
+        np.savetxt(DATA_OUTPUT + f"true_labels_{percentile}_sigma{i}.txt", labels_split)
 
 
         pylab.scatter(Y[:, 0], Y[:, 1], 20, labels_split)
-        pylab.savefig(f"TSNE_output_{percentile}.png")
+        pylab.savefig(DATA_OUTPUT + f"TSNE_output_{percentile}_sigma{i}.png")
         pylab.show()
+
+        # np.savetxt(DATA_OUTPUT + f"TSNE_output_{percentile}.txt", Y)
+        # np.savetxt(DATA_OUTPUT + f"true_labels_{percentile}.txt", labels_split)
+
+
+        # pylab.scatter(Y[:, 0], Y[:, 1], 20, labels_split)
+        # pylab.savefig(DATA_OUTPUT + f"TSNE_output_{percentile}.png")
+        # pylab.show()
