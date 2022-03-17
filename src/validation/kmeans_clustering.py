@@ -30,12 +30,7 @@ def run_kmeans(Y, labels, percentile, error, perc, n_clusters = 2):
 
     y_pred = kmeans.labels_
 
-    if n_clusters == 2:
-        mistakes = 0
-        for i in range(len(y_pred)):
-            if y_pred[i] != labels[i]:
-                mistakes += 1
-    else:
+    if n_clusters != 2:
         y_pred_new = y_pred
         for cluster in range(n_clusters):
             idx = np.where(y_pred == cluster)
@@ -47,13 +42,13 @@ def run_kmeans(Y, labels, percentile, error, perc, n_clusters = 2):
 
         y_pred = y_pred_new
         
-        mistakes_e1 = 0
-        mistakes_e2 = 0
-        for i in range(len(y_pred)):
-            if y_pred[i] != labels[i]:
-                mistakes_e1 += 1
-            else: 
-                mistakes_e2 += 1
+    mistakes_e1 = 0
+    mistakes_e2 = 0
+    for i in range(len(y_pred)):
+        if y_pred[i] != labels[i]:
+            mistakes_e1 += 1
+        else: 
+            mistakes_e2 += 1
     
     mistakes = mistakes_e1 if (mistakes_e1 < mistakes_e2) else mistakes_e2
 
@@ -61,56 +56,59 @@ def run_kmeans(Y, labels, percentile, error, perc, n_clusters = 2):
     error.append(1 - mistakes/len(y_pred))
     perc.append(percentile)
 
-error = []
-perc = []
 
-# for i, sigma in enumerate(range(1,11)):
 
-#     error.append([])
-#     perc.append([])
+if __name__ == "__main__":
+    error = []
+    perc = []
 
-i = 5
-sigma = 50
+    # for i, sigma in enumerate(range(1,11)):
 
-        
-for percentile in range(1,10,1):
-    # Y = np.loadtxt(DATA_PATH + f"TSNE_output_{percentile}_sigma{sigma}.txt") 
-    # labels = np.loadtxt(DATA_PATH + f"true_labels_{percentile}_sigma{sigma}.txt")
+    #     error.append([])
+    #     perc.append([])
 
-    # run_kmeans(Y, labels, percentile, error[i], perc[i], 2)
+    i = 5
+    sigma = 50
 
-    Y = np.loadtxt(DATA_PATH + f"TSNE_output_{percentile}_sigma{sigma}.txt") 
-    labels = np.loadtxt(DATA_PATH + f"true_labels_{percentile}_sigma{sigma}.txt")
+            
+    for percentile in range(1,10,1):
+        # Y = np.loadtxt(DATA_PATH + f"TSNE_output_{percentile}_sigma{sigma}.txt") 
+        # labels = np.loadtxt(DATA_PATH + f"true_labels_{percentile}_sigma{sigma}.txt")
 
-    run_kmeans(Y, labels, percentile, error, perc, 5)
+        # run_kmeans(Y, labels, percentile, error[i], perc[i], 2)
 
-# for percentile in range(10,110,10):
-#     # Y = np.loadtxt(DATA_PATH +f"TSNE_output_{percentile}_sigma{sigma}.txt") 
-#     # labels = np.loadtxt(DATA_PATH +f"true_labels_{percentile}_sigma{sigma}.txt")
+        Y = np.loadtxt(DATA_PATH + f"TSNE_output_{percentile}_sigma{sigma}.txt") 
+        labels = np.loadtxt(DATA_PATH + f"true_labels_{percentile}_sigma{sigma}.txt")
 
-#     # run_kmeans(Y, labels, percentile, error[i], perc[i], 2)
+        run_kmeans(Y, labels, percentile, error, perc, 5)
 
-#     Y = np.loadtxt(DATA_PATH + f"TSNE_output_{percentile}_sigma{sigma}.txt") 
-#     labels = np.loadtxt(DATA_PATH + f"true_labels_{percentile}_sigma{sigma}.txt")
+    for percentile in range(10,110,10):
+    #     # Y = np.loadtxt(DATA_PATH +f"TSNE_output_{percentile}_sigma{sigma}.txt") 
+    #     # labels = np.loadtxt(DATA_PATH +f"true_labels_{percentile}_sigma{sigma}.txt")
 
-#     run_kmeans(Y, labels, percentile, error, perc, 5)
+    #     # run_kmeans(Y, labels, percentile, error[i], perc[i], 2)
 
-# for j in range(len(error)): 
-#     curr_err = error[j]
-#     if curr_err < 0.4:
-#         error[j] = 1-curr_err
+        Y = np.loadtxt(DATA_PATH + f"TSNE_output_{percentile}_sigma{sigma}.txt") 
+        labels = np.loadtxt(DATA_PATH + f"true_labels_{percentile}_sigma{sigma}.txt")
 
-fig = go.Figure()
+        run_kmeans(Y, labels, percentile, error, perc, 5)
 
-# for i in range(len(perc)):
-#     fig.add_trace(go.Scatter(x=perc[i], y=error[i],
-#                     mode='lines',
-#                     name=i+1
-#                     ))
+    # for j in range(len(error)): 
+    #     curr_err = error[j]
+    #     if curr_err < 0.4:
+    #         error[j] = 1-curr_err
 
-fig.add_trace(go.Scatter(x=perc, y=error,
-                    mode='lines'
-                    ))
- 
-fig.show()
+    fig = go.Figure()
+
+    # for i in range(len(perc)):
+    #     fig.add_trace(go.Scatter(x=perc[i], y=error[i],
+    #                     mode='lines',
+    #                     name=i+1
+    #                     ))
+
+    fig.add_trace(go.Scatter(x=perc, y=error,
+                        mode='lines'
+                        ))
+    
+    fig.show()
 

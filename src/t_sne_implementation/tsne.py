@@ -37,7 +37,7 @@ def x2p(X=np.array([]), tol=1e-5, perplexity=30.0):
     """
 
     # Initialize some variables
-    print("Computing pairwise distances...")
+    # print("Computing pairwise distances...")
     (n, d) = X.shape
     sum_X = np.sum(np.square(X), 1)
     D = np.add(np.add(-2 * np.dot(X, X.T), sum_X).T, sum_X)
@@ -49,8 +49,8 @@ def x2p(X=np.array([]), tol=1e-5, perplexity=30.0):
     for i in range(n):
 
         # Print progress
-        if i % 500 == 0:
-            print("Computing P-values for point %d of %d..." % (i, n))
+        # if i % 500 == 0:
+            # print("Computing P-values for point %d of %d..." % (i, n))
 
         # Compute the Gaussian kernel and entropy for the current precision
         betamin = -np.inf
@@ -86,7 +86,7 @@ def x2p(X=np.array([]), tol=1e-5, perplexity=30.0):
         P[i, np.concatenate((np.r_[0:i], np.r_[i+1:n]))] = thisP
 
     # Return final P-matrix
-    print("Mean value of sigma: %f" % np.mean(np.sqrt(1 / beta)))
+    # print("Mean value of sigma: %f" % np.mean(np.sqrt(1 / beta)))
     return P
 
 
@@ -96,7 +96,7 @@ def pca(X=np.array([]), no_dims=50):
         no_dims dimensions.
     """
 
-    print("Preprocessing the data using PCA...")
+    # print("Preprocessing the data using PCA...")
     (n, d) = X.shape
     X = X - np.tile(np.mean(X, 0), (n, 1))
     (l, M) = np.linalg.eig(np.dot(X.T, X))
@@ -172,7 +172,7 @@ def tsne(X=np.array([]), no_dims=2, initial_dims=50, perplexity=30.0):
         # Compute current value of cost function
         if (iter + 1) % 10 == 0:
             C = np.sum(P * np.log(P / Q))
-            print("Iteration %d: error is %f" % (iter + 1, C))
+            # print("Iteration %d: error is %f" % (iter + 1, C))
 
         # Stop lying about P-values
         if iter == 100:
@@ -199,7 +199,7 @@ if __name__ == "__main__":
 # X = np.loadtxt(DATA_PATH + f"mnist/mnist2500_X_01234.txt")
 # labels = np.loadtxt(DATA_PATH + "mnist/mnist2500_labels_01234.txt")
 
-    for percentile in range(1,10,1): 
+    for percentile in range(10,110,10): 
         print(f"Percentile: {percentile}")
         np.random.seed(42) # seed is reset every time so we may run a single percentile alone and still get the same results
         arr_rand = np.random.rand(X.shape[0])
@@ -225,3 +225,5 @@ if __name__ == "__main__":
         # pylab.scatter(Y[:, 0], Y[:, 1], 20, labels_split)
         # pylab.savefig(DATA_OUTPUT + f"TSNE_output_{percentile}.png")
         # pylab.show()
+
+
