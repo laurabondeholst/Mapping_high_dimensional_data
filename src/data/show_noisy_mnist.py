@@ -16,6 +16,7 @@ mu =  0
 # df = pd.read_csv('src/t-sne_implementation/mnist2500_X_01.txt',  sep=' ')
 
 X = np.loadtxt("data/processed/mnist/mnist2500_X_01.txt")
+print(X)
 X0 = np.reshape(X[0], [28,28])
 
 plt.title(f"Sigma:  {sigma}")

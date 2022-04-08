@@ -17,7 +17,9 @@ noisy_X = X + noise
 mini = np.min(noisy_X)
 maxi = np.max(noisy_X)
 
-noisy_X = noisy_X/maxi - mini
+noisy_X = (noisy_X-mini)/maxi
+print(f"mini {mini}")
+print(f"maxi {maxi}")
 
 # no_pixels = np.random.randint(0,int((size-1)*sigma))
 # idx_to_modify = np.random.choice(size, no_pixels)
