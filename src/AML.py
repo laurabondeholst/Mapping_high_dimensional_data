@@ -12,6 +12,7 @@ from sklearn.model_selection import train_test_split
 from tqdm.auto import tqdm
 import numpy as np
 import warnings
+from mnist import get_mnist
 
 
 ##### kemans_clustering
@@ -174,11 +175,11 @@ if mnist:
   # dataset_length_0= len(digits_0.data);
 
 else: 
-  from tensorflow.keras.datasets import fashion_mnist
+  # from tensorflow.keras.datasets import fashion_mnist
   from sklearn.utils import shuffle
 
   digits = load_digits(n_class=2) # i know this is not smart, but I am tired 
-  (digits.data, digits.target), (_, _) = fashion_mnist.load_data()
+  (digits.data, digits.target), (_, _) = fashion_mnist("FASHION_MNIST")
 
   idx_0 = np.where(digits.target == 1) # trouser
   idx_1 = np.where(digits.target == 8) # bag
