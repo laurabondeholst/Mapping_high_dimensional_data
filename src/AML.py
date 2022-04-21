@@ -16,7 +16,7 @@ import warnings
 
 ##### Load Fashun_mnist
 
-def load_mnist(path, kind='train'):
+def load_fashion(path, kind='t10k'):
     import os
     import gzip
     import numpy as np
@@ -193,11 +193,12 @@ if mnist:
   # dataset_length_0= len(digits_0.data);
 
 else: 
-  # from tensorflow.keras.datasets import fashion_mnist
   from sklearn.utils import shuffle
+  import os
 
   digits = load_digits(n_class=2) # i know this is not smart, but I am tired 
-  (digits.data, digits.target), (_, _) = fashion_mnist("FASHION_MNIST")
+  path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+  digits.data, digits.target = load_fashion(path=path + "\\data\\processed\\fashion_mnist")
 
   idx_0 = np.where(digits.target == 1) # trouser
   idx_1 = np.where(digits.target == 8) # bag
