@@ -137,8 +137,8 @@ def distributeData(X, y, min_class_size, classes = [0,1]):
   temp_x1 = X[index1[0]]
   temp_y1 = y[index1[0]]
 
-  print(f"Previous perc of class 0 between classes: {len(temp_x0)/(len(temp_x0)+len(temp_x1))} ")
-  print(f"Previous perc of class 1 between classes: {len(temp_x1)/(len(temp_x0)+len(temp_x1))} ")
+  print("Previous perc of class 0 between classes: {} ".format(len(temp_x0)/(len(temp_x0)+len(temp_x1))))
+  print("Previous perc of class 1 between classes: {} ".format(len(temp_x1)/(len(temp_x0)+len(temp_x1))))
   arr_rand = np.random.rand(len(temp_x0))
   split = arr_rand < np.percentile(arr_rand,100*(min_class_size/(1-min_class_size)))
 
@@ -146,8 +146,8 @@ def distributeData(X, y, min_class_size, classes = [0,1]):
   temp_y0 = temp_y0[split]
 
 
-  print(f"New perc of class 0 between classes: {len(temp_x0)/(len(temp_x0)+len(temp_x1))}")
-  print(f"New perc of class 1 between classes: {len(temp_x1)/(len(temp_x0)+len(temp_x1))}")
+  print("Current perc of class 0 between classes: {} ".format(len(temp_x0)/(len(temp_x0)+len(temp_x1))))
+  print("Current perc of class 1 between classes: {} ".format(len(temp_x1)/(len(temp_x0)+len(temp_x1))))
 
   new_X = np.concatenate((temp_x0,temp_x1))
   new_y = np.concatenate((temp_y0,temp_y1))
@@ -338,7 +338,7 @@ for ns in noise_range:
   if umap_enable: 
     df['correct_predicted_percent_umap'] = correct_count_list_umap
 
-  df.to_csv(f'results_sigma{ns}.csv')
+  df.to_csv('results_sigma{}.csv'.format(ns))
 
   fig = go.Figure(layout_xaxis_range=[0,np.max(datapoint_range)],layout_yaxis_range=[0,1])
   
@@ -351,7 +351,7 @@ for ns in noise_range:
   if umap_enable:
     fig.add_trace(go.Scatter(x=df.data_points_number.values, y=df.correct_predicted_percent_umap.values, name="UMAP", mode='lines'))
 
-  fig.update_layout(legend_title_text = f"Noise level: {ns}")
+  fig.update_layout(legend_title_text = "Noise level: {}".format(ns))
   fig.update_xaxes(title_text="Datapoints")
   fig.update_yaxes(title_text="Accuracy [%]")
   fig.show()
