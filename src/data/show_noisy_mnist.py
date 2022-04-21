@@ -61,5 +61,3 @@ plt.subplot(1, 3, 3)
 plt.imshow(salt_pepper_X0,cmap=plt.get_cmap('gray'))
 plt.title("Salt+Pepper noise")
 plt.show()
-
-

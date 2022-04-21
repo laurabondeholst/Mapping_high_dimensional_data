@@ -2,7 +2,7 @@
 from sklearn.datasets import load_digits
 
 import umap  # "pip install umap-learn --ignore-installed" does the trick for Laura
-# import trimap
+# import trimap #without trimap since 
 import pandas as pd
 from sklearn.manifold import TSNE
 from sklearn.cluster import KMeans
@@ -22,8 +22,10 @@ plt.style.use('fivethirtyeight') # For better style
 warnings.filterwarnings("ignore")
 
 trimap_enable = False
-tsne_enable = True
-umap_enable = True
+tsne_enable = False
+umap_enable = False
+
+mnist = False
 
 # DATA_PATH = "data/processed/"
 # DATA_OUTPUT = DATA_PATH + "noisy_mnist/tsne_results/"
@@ -77,17 +79,49 @@ def distributeData(X, y, min_class_size, classes = [0,1]):
   return new_X, new_y
 
 
+def mapTarget(y):
+  vals = np.unique(y)
+  index = 0
+
+  for val in vals:
+    idx = np.where(y == val)
+    y[idx] = index
+    index += 0
+
+  return y
+
 
 ## INITIALISING VALUES
-n_classes=2
-digits = load_digits(n_class=n_classes)
-dataset_length= len(digits.data);
+if mnist: 
+  n_classes=2
+  digits = load_digits(n_class=n_classes)
 
-digits_0 = load_digits(n_class=1)
-dataset_length_0= len(digits_0.data);
+  # digits_0 = load_digits(n_class=1)
+  # dataset_length_0= len(digits_0.data);
 
-digits.data, digits.target = distributeData(digits.data, digits.target, min_class_size = 0.25)
+else: 
+  from tensorflow.keras.datasets import fashion_mnist
+  from sklearn.utils import shuffle
+
+  digits = load_digits(n_class=2) # i know this is not smart, but I am tired 
+  (digits.data, digits.target), (_, _) = fashion_mnist.load_data()
+
+  idx_0 = np.where(digits.target == 1) # trouser
+  idx_1 = np.where(digits.target == 8) # bag
+
+  digits.data = np.concatenate([digits.data[idx_0], digits.data[idx_1]])
+  N = len(digits.data)
+  digits.data = np.reshape(digits.data,[N,784])
+  digits.target = np.concatenate([digits.target[idx_0], digits.target[idx_1]])
+
+  digits.data, digits.target = shuffle(digits.data, digits.target)
+  digits.target = mapTarget(digits.target) # mapping targets to 0 and 1 instead
+
+# digits.data, digits.target = distributeData(digits.data, digits.target, min_class_size = 0.25, classes=[7,9]) # outcomment for natural distribution
 dataset_length = len(digits.target)
+# print(f"Length of dataset: {dataset_length}")
+# print(f"Shape of data: {digits.data[0].shape}")
+# print(digits.data[0])
 
 
 X_norm  = []
@@ -96,9 +130,9 @@ for digit in digits.data:
 
 
 crossvaltimes= 5;
-noise_range=[0,10]
+noise_range=[40,50]
 testing_range=75
-train_size = 0.6
+train_size = 0.5
 
 # progress_bar = tqdm(range(noise_range*(testing_range-4)))
 
@@ -111,10 +145,11 @@ correct_count_list_umap=[];
 ns_i_list = []
 
 datapoint_range = []
-for i in range(4,int(dataset_length)): # from 4 since some models requires at least 3 datapoints
-  if i < dataset_length*0.1:
+max_range = dataset_length if dataset_length < 300 else 300
+for i in range(4,max_range): # from 4 since some models requires at least 3 datapoints
+  if i < 50:
     datapoint_range.append(i)
-  elif i < dataset_length*0.3 and i%10 == 0: 
+  elif i < 100 and i%10 == 0: 
     datapoint_range.append(i)
   elif i%50 == 0: 
     datapoint_range.append(i)
@@ -130,7 +165,10 @@ for i in datapoint_range:
 
 ## MAIN LOOP
 for ns in noise_range: 
-  noisy_X= addnoise(0,ns,np.array(X_norm))
+  if ns != 0: 
+    noisy_X= addnoise(0,ns,np.array(X_norm))
+  else:
+    noisy_X = X_norm
 
   progress_bar = tqdm(np.array(datapoint_range)*np.array(repetition_range))
 
@@ -152,6 +190,13 @@ for ns in noise_range:
     for jr in range(repetition_range[i_enum]):
       # split into train test sets
       X, _, y, _ = train_test_split(noisy_X, digits.target, train_size=(i/dataset_length), stratify=digits.target ) 
+
+      # zero = 0  
+      # for x in y:
+      #   if x == 7:
+      #     zero +=1
+
+      # print(zero/i)
 
       y_pred= pca = PCA(n_components=3).fit_transform(X)
       correct_count_pca.append(kmeans.run_kmeans(y_pred, y, test_size=0.5))
@@ -184,11 +229,11 @@ for ns in noise_range:
 
       if tsne_enable: 
         y_pred = TSNE(n_components=2, init='pca', random_state=0).fit_transform(X)
-        correct_count_tsne.append(kmeans.run_kmeans(y_pred, y, test_size=0.5))
+        correct_count_tsne.append(kmeans.run_kmeans(y_pred, y, test_size=1-train_size))
 
       if umap_enable: 
         y_pred = umap.UMAP().fit_transform(X)
-        correct_count_umap.append(kmeans.run_kmeans(y_pred, y, test_size=0.5))
+        correct_count_umap.append(kmeans.run_kmeans(y_pred, y, test_size=1-train_size))
 
 
     ns_i_list.append([ns, i])
@@ -220,7 +265,7 @@ for ns in noise_range:
 
   df.to_csv(f'results_sigma{ns}.csv')
 
-  fig = go.Figure()
+  fig = go.Figure(layout_xaxis_range=[0,np.max(datapoint_range)],layout_yaxis_range=[0,1])
   
   fig.add_trace(go.Scatter(x=df.data_points_number.values, y=df.correct_predicted_percent_pca.values, name="PCA", mode='lines'))
   
