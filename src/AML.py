@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 from sklearn.datasets import load_digits
 
 import umap  # "pip install umap-learn --ignore-installed" does the trick for Laura
@@ -12,22 +13,42 @@ from sklearn.model_selection import train_test_split
 from tqdm.auto import tqdm
 import numpy as np
 import warnings
-from mnist import get_mnist
+
+##### Load Fashun_mnist
+
+def load_mnist(path, kind='train'):
+    import os
+    import gzip
+    import numpy as np
+    
+    """Load MNIST data from `path`"""
+    labels_path = os.path.join(path,
+                               '%s-labels-idx1-ubyte.gz'
+                               % kind)
+    images_path = os.path.join(path,
+                               '%s-images-idx3-ubyte.gz'
+                               % kind)
+
+    with gzip.open(labels_path, 'rb') as lbpath:
+        labels = np.frombuffer(lbpath.read(), dtype=np.uint8,
+                               offset=8)
+
+    with gzip.open(images_path, 'rb') as imgpath:
+        images = np.frombuffer(imgpath.read(), dtype=np.uint8,
+                               offset=16).reshape(len(labels), 784)
+
+    return images, labels
 
 
-##### kemans_clustering
+##### kmeans_clustering
 """
 This script takes the coordinates of the mapping method (the output from t-SNE in my case)
 as well as the true labels of the correndsponding data and produces a plot of the error rate
-
 TODO: modify the ranges to fit your data
 TODO: modify the filepath and names of the output from the mapping method and true labels
-
 """
 
-import numpy as np
-from sklearn.cluster import KMeans
-from sklearn.model_selection import train_test_split
+
 # import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 
@@ -91,7 +112,6 @@ def run_kmeans(Y, labels, n_clusters = 2, test_size = 0.5):
 
 from validation import kmeans_clustering as kmeans
 
-import plotly.graph_objects as go
 
 plt.style.use('fivethirtyeight') # For better style
 warnings.filterwarnings("ignore")
@@ -124,9 +144,7 @@ def normalise(X):
 def distributeData(X, y, min_class_size, classes = [0,1]):
   """
   Will stratify the data unevenly, so that the first class is min_size large
-
   min_class_size should be float between 0 and 0.5
-
   Returns: X, y
   """
   index0 = np.where(y==classes[0])
@@ -355,4 +373,3 @@ for ns in noise_range:
   fig.update_xaxes(title_text="Datapoints")
   fig.update_yaxes(title_text="Accuracy [%]")
   fig.show()
-  
