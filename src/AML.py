@@ -14,6 +14,20 @@ from tqdm.auto import tqdm
 import numpy as np
 import warnings
 
+## CHOOSE WHAT MODELS TO RUN (pca is always enabled in order to have a benchmark )
+trimap_enable = False # remember to import library as well
+tsne_enable = True
+umap_enable = True
+
+## CHOOSE DATASET
+mnist = False #false => fashion
+
+## ENABLE OR DISABLE 25/75 STRATIFICATINO
+strat_enable = True
+
+## CHOOSE NOISES TO ADD 
+noise_range=[0, 0.2, 0.5, 0.7, 1]
+
 ##### Load Fashun_mnist
 
 def load_fashion(path, kind='t10k'):
@@ -110,17 +124,13 @@ def run_kmeans(Y, labels, n_clusters = 2, test_size = 0.5):
 ####
 
 
-from validation import kmeans_clustering as kmeans
+# from validation import kmeans_clustering as kmeans
 
 
-plt.style.use('fivethirtyeight') # For better style
+# plt.style.use('fivethirtyeight') # For better style
 warnings.filterwarnings("ignore")
 
-trimap_enable = False
-tsne_enable = False
-umap_enable = False
 
-mnist = False
 
 # DATA_PATH = "data/processed/"
 # DATA_OUTPUT = DATA_PATH + "noisy_mnist/tsne_results/"
@@ -187,6 +197,7 @@ def mapTarget(y):
 ## INITIALISING VALUES
 if mnist: 
   n_classes=2
+  classes = [0,1]
   digits = load_digits(n_class=n_classes)
 
   # digits_0 = load_digits(n_class=1)
@@ -200,8 +211,9 @@ else:
   path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
   digits.data, digits.target = load_fashion(path=path + "\\data\\processed\\fashion_mnist")
 
-  idx_0 = np.where(digits.target == 1) # trouser
-  idx_1 = np.where(digits.target == 8) # bag
+  classes = [1,8]
+  idx_0 = np.where(digits.target == classes[0]) 
+  idx_1 = np.where(digits.target == classes[1]) 
 
   digits.data = np.concatenate([digits.data[idx_0], digits.data[idx_1]])
   N = len(digits.data)
@@ -211,7 +223,8 @@ else:
   digits.data, digits.target = shuffle(digits.data, digits.target)
   digits.target = mapTarget(digits.target) # mapping targets to 0 and 1 instead
 
-# digits.data, digits.target = distributeData(digits.data, digits.target, min_class_size = 0.25, classes=[7,9]) # outcomment for natural distribution
+if strat_enable: 
+  digits.data, digits.target = distributeData(digits.data, digits.target, min_class_size = 0.25, classes=classes) # outcomment for natural distribution
 dataset_length = len(digits.target)
 # print(f"Length of dataset: {dataset_length}")
 # print(f"Shape of data: {digits.data[0].shape}")
@@ -224,7 +237,7 @@ for digit in digits.data:
 
 
 crossvaltimes= 5;
-noise_range=[40,50]
+
 testing_range=75
 train_size = 0.5
 
@@ -250,7 +263,7 @@ for i in range(4,max_range): # from 4 since some models requires at least 3 data
 
 repetition_range = []
 for i in datapoint_range:
-  perc = i/dataset_length*100
+  perc = i/max_range*100
   if perc < 1:
     perc = 1
 
@@ -282,8 +295,8 @@ for ns in noise_range:
     correct_count_umap=[]
     np.random.seed(42)
     for jr in range(repetition_range[i_enum]):
-      # split into train test sets
-      X, _, y, _ = train_test_split(noisy_X, digits.target, train_size=(i/dataset_length), stratify=digits.target ) 
+      # randomly select the correct number of datapoints
+      X, _, y, _ = train_test_split(noisy_X, digits.target, train_size=float(i)/float(dataset_length), stratify=digits.target ) 
 
       # zero = 0  
       # for x in y:
@@ -300,26 +313,8 @@ for ns in noise_range:
           n_in= i-2
         else:
           n_in=3
-        embedding_trimap = trimap.TRIMAP(n_inliers=n_in, n_outliers=3, n_random=3).fit_transform(X)
-        kmeans_trimap = KMeans(n_clusters=2, random_state=0).fit(embedding_trimap);
-        predicted_labels_trimap= kmeans_trimap.labels_;
-        y_find_trimap, y_analyze_trimap, pred_find_trimap, pred_analyze_trimap = train_test_split(y, predicted_labels_trimap, train_size=0.5,stratify=y)
-      
-        count1=0; 
-
-        for cj in range(0,len(y_find_trimap)):
-          if(y_find_trimap[cj]== pred_find_trimap[cj]):
-            count1= count1+1;
-
-
-        if (count1 >= (len(y_find_trimap)/2)):
-          for cj in range (0, len(y_analyze_trimap)):
-            if(y_analyze_trimap[cj]== pred_analyze_trimap[cj]):
-              correct_count_trimap= correct_count_trimap+1;
-        else:
-          for cj in range (0, len(y_analyze_trimap)):
-            if(y_analyze_trimap[cj]!= pred_analyze_trimap[cj]):
-              correct_count_trimap= correct_count_trimap+1;      
+        y_pred = trimap.TRIMAP(n_inliers=n_in, n_outliers=3, n_random=3).fit_transform(X)
+        correct_count_trimap.append(run_kmeans(y_pred, y, test_size=1-train_size))
 
       if tsne_enable: 
         y_pred = TSNE(n_components=2, init='pca', random_state=0).fit_transform(X)
@@ -334,7 +329,7 @@ for ns in noise_range:
     correct_count_list_pca.append(np.mean(correct_count_pca))
 
     if trimap_enable: 
-      correct_count_list_trimap.append(((correct_count_trimap*200)/(i*crossvaltimes)))
+      correct_count_list_trimap.append(np.mean(correct_count_trimap))
     if tsne_enable: 
       correct_count_list_tsne.append(np.mean(correct_count_tsne))
     if umap_enable: 
