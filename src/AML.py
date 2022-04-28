@@ -298,12 +298,12 @@ for ns in noise_range:
       # randomly select the correct number of datapoints
       X, _, y, _ = train_test_split(noisy_X, digits.target, train_size=float(i)/float(dataset_length), stratify=digits.target ) 
 
-      zero = 0  
-      for x in y:
-        if x == 0:
-          zero +=1
+      # zero = 0  
+      # for x in y:
+      #   if x == 0:
+      #     zero +=1
 
-      print(zero/i)
+      # print(zero/i)
       
 
       y_pred= pca = PCA(n_components=3).fit_transform(X)
