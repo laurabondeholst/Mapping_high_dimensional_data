@@ -2,7 +2,7 @@
 
 from sklearn.datasets import load_digits
 
-import umap  # "pip install umap-learn --ignore-installed" does the trick for Laura
+# import umap  # "pip install umap-learn --ignore-installed" does the trick for Laura
 # import trimap #without trimap since 
 import pandas as pd
 from sklearn.manifold import TSNE
@@ -16,17 +16,18 @@ import warnings
 
 ## CHOOSE WHAT MODELS TO RUN (pca is always enabled in order to have a benchmark )
 trimap_enable = False # remember to import library as well
-tsne_enable = True
-umap_enable = True
+tsne_enable = False
+umap_enable = False
 
 ## CHOOSE DATASET
-mnist = True #false => fashion
+mnist = False #false => fashion
 
 ## ENABLE OR DISABLE 25/75 STRATIFICATINO
 strat_enable = True
+min_class_size = 0.25 # if strat_enable=True, select smallest class size (if strat false value wont be used)
 
 ## CHOOSE NOISES TO ADD 
-noise_range=[0, 0.2, 0.5, 0.7, 1]
+noise_range=[0, 0.5, 1]
 
 
 ##### Load Fashun_mnist
@@ -223,7 +224,7 @@ else:
   digits.target = mapTarget(digits.target) # mapping targets to 0 and 1 instead
 
 if strat_enable: 
-  digits.data, digits.target = distributeData(digits.data, digits.target, min_class_size = 0.25) # outcomment for natural distribution
+  digits.data, digits.target = distributeData(digits.data, digits.target, min_class_size = min_class_size) # outcomment for natural distribution
 dataset_length = len(digits.target)
 # print(f"Length of dataset: {dataset_length}")
 # print(f"Shape of data: {digits.data[0].shape}")
@@ -251,9 +252,9 @@ correct_count_list_umap=[];
 ns_i_list = []
 
 datapoint_range = []
-max_range = dataset_length if dataset_length < 300 else 300
-for i in range(4,max_range): # from 4 since some models requires at least 3 datapoints
-  if i < 50:
+max_range = dataset_length #if dataset_length < 300 else 300
+for i in range(4,100): # from 4 since some models requires at least 3 datapoints
+  if i < 10:
     datapoint_range.append(i)
   elif i < 100 and i%10 == 0: 
     datapoint_range.append(i)
@@ -297,12 +298,13 @@ for ns in noise_range:
       # randomly select the correct number of datapoints
       X, _, y, _ = train_test_split(noisy_X, digits.target, train_size=float(i)/float(dataset_length), stratify=digits.target ) 
 
-      # zero = 0  
-      # for x in y:
-      #   if x == 7:
-      #     zero +=1
+      zero = 0  
+      for x in y:
+        if x == 0:
+          zero +=1
 
-      # print(zero/i)
+      print(zero/i)
+      
 
       y_pred= pca = PCA(n_components=3).fit_transform(X)
       correct_count_pca.append(run_kmeans(y_pred, y, test_size=0.5))
