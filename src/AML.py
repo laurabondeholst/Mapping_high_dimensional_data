@@ -20,7 +20,7 @@ tsne_enable = True
 umap_enable = True
 
 ## CHOOSE DATASET
-mnist = False #false => fashion
+mnist = True #false => fashion
 
 ## ENABLE OR DISABLE 25/75 STRATIFICATINO
 strat_enable = True
@@ -28,8 +28,8 @@ strat_enable = True
 ## CHOOSE NOISES TO ADD 
 noise_range=[0, 0.2, 0.5, 0.7, 1]
 
-##### Load Fashun_mnist
 
+##### Load Fashun_mnist
 def load_fashion(path, kind='t10k'):
     import os
     import gzip
@@ -185,11 +185,10 @@ def distributeData(X, y, min_class_size, classes = [0,1]):
 def mapTarget(y):
   vals = np.unique(y)
   index = 0
-
   for val in vals:
     idx = np.where(y == val)
     y[idx] = index
-    index += 0
+    index += 1
 
   return y
 
@@ -224,7 +223,7 @@ else:
   digits.target = mapTarget(digits.target) # mapping targets to 0 and 1 instead
 
 if strat_enable: 
-  digits.data, digits.target = distributeData(digits.data, digits.target, min_class_size = 0.25, classes=classes) # outcomment for natural distribution
+  digits.data, digits.target = distributeData(digits.data, digits.target, min_class_size = 0.25) # outcomment for natural distribution
 dataset_length = len(digits.target)
 # print(f"Length of dataset: {dataset_length}")
 # print(f"Shape of data: {digits.data[0].shape}")
